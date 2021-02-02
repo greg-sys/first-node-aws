@@ -85,6 +85,11 @@ router.get('/siderealPlanets', (req, res) => {
             });
         }
     });
+    // four lines below from StackOverflow to allow CORS
+    res.header('Access-Control-Allow-Origin', '*')
+    res.header('Access-Control-Allow-Credentials', true)
+    res.header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
     res.json(localPlanetaryPositions);
 });
 

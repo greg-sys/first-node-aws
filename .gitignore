@@ -48,7 +48,8 @@ web_modules/
 *.tsbuildinfo
 
 # Optional npm cache directory
-.npm
+# Greg is commenting the following line to allow .npmrc to go into the repository
+# .npm
 
 # Optional eslint cache
 .eslintcache
