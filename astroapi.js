@@ -85,6 +85,11 @@ router.get('/siderealPlanets', (req, res) => {
             });
         }
     });
+    // place ketu 180 degrees apart from rahu
+    localPlanetaryPositions["ketu"] = (localPlanetaryPositions["rahu"] + 180);
+    if (localPlanetaryPositions["ketu"] > 360) {
+        localPlanetaryPositions["ketu"] = (localPlanetaryPositions["rahu"] - 360);
+    }
     // four lines below from StackOverflow to allow CORS
     res.header('Access-Control-Allow-Origin', '*')
     res.header('Access-Control-Allow-Credentials', true)
