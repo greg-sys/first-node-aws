@@ -86,7 +86,7 @@ router.get('/siderealPlanets', (req, res) => {
         }
     });
     // place ketu 180 degrees apart from rahu
-    localPlanetaryPositions["ketu"] = (localPlanetaryPositions["rahu"] + 180); // test again
+    localPlanetaryPositions["ketu"] = (localPlanetaryPositions["rahu"] + 180); // test yet again again
     if (localPlanetaryPositions["ketu"] > 360) {
         localPlanetaryPositions["ketu"] = (localPlanetaryPositions["rahu"] - 360);
     }
