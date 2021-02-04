@@ -68,28 +68,29 @@ router.get('/siderealPlanets', (req, res) => {
     swisseph.swe_set_sid_mode(swisseph.SE_SIDM_LAHIRI, 0, 0);
     var flag = swisseph.SEFLG_SIDEREAL | swisseph.SEFLG_SPEED; // use sidereal position, high precision
     var date = {year: 1978, month: 10, day: 14, hour: 2};
-    var responseString = "";
+    // var responseString = "";
     const planetaryFlags = {"sun": swisseph.SE_SUN, "moon": swisseph.SE_MOON, "mars": swisseph.SE_MARS, "mercury": swisseph.SE_MERCURY, "jupiter": swisseph.SE_JUPITER, "venus": swisseph.SE_VENUS, "saturn": swisseph.SE_SATURN, "uranus": swisseph.SE_URANUS, "rahu": swisseph.SE_TRUE_NODE, "ketu": swisseph.SE_TRUE_NODE}; 
-    responseString += ('Test date:' + JSON.stringify(date));
+    // responseString += ('Test date:' + JSON.stringify(date));
     // Julian day
     swisseph.swe_julday (date.year, date.month, date.day, date.hour, swisseph.SE_GREG_CAL, function (julday_ut) {
-        responseString += ('Julian UT day for date:' + julday_ut);
+        //nresponseString += ('Julian UT day for date:' + julday_ut);
         localPlanetaryPositions = planetaryPositions[0];
         for (const planet in localPlanetaryPositions) {
             // calculate planetary positions
             swisseph.swe_calc_ut (julday_ut, planetaryFlags[planet], flag, function (body) {
                 assert (!body.error, body.error);
                 // assuming parseInt returns only integer part without rounding
-                responseString += ('Planet ' + planet + " longitude: " + JSON.stringify(parseInt((body.longitude / 30))));
+                // responseString += ('Planet ' + planet + " longitude: " + JSON.stringify(parseInt((body.longitude / 30))));
+                if (planet === "ketu") { // place ketu 180 degrees apart from rahu
+                    body.longitude += 180;
+                    if (body.longitude > 360) { // wrap around circle if necessary
+                        body.longitude -= 360;
+                    }
+                }
                 localPlanetaryPositions[planet] = parseInt((body.longitude / 30)); // should assign position to planet
             });
         }
     });
-    // place ketu 180 degrees apart from rahu
-    localPlanetaryPositions["ketu"] = (localPlanetaryPositions["rahu"] + 180); // test yet again again
-    if (localPlanetaryPositions["ketu"] > 360) {
-        localPlanetaryPositions["ketu"] = (localPlanetaryPositions["rahu"] - 360);
-    }
     // four lines below from StackOverflow to allow CORS
     res.header('Access-Control-Allow-Origin', '*')
     res.header('Access-Control-Allow-Credentials', true)
