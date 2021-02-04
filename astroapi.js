@@ -56,7 +56,12 @@ router.get('/planets', (req, res) => {
 });
 
 router.get('/date', (req, res) => {
-    var date = {year: 2015, month: 1, day: 1, hour: 0};
+    var dateObject = new Date(Date.now());
+    var date = {year: 0, month: 0, day: 0, hour: 0};
+    date["year"] = dateObject.getFullYear();
+    date["month"] = (dateObject.getMonth() + 1); // add one because the object counts from zero and swisseph counts from one
+    date["day"] = dateObject.getDay();
+    date["hour"] = dateObject.getHours();
     var julday = swisseph.swe_julday(date.year, date.month, date.day, date.hour, swisseph.SE_GREG_CAL);
     res.json(julday);
 });
@@ -67,10 +72,14 @@ router.get('/siderealPlanets', (req, res) => {
     // set ayanamsa to standard Lahiri
     swisseph.swe_set_sid_mode(swisseph.SE_SIDM_LAHIRI, 0, 0);
     var flag = swisseph.SEFLG_SIDEREAL | swisseph.SEFLG_SPEED; // use sidereal position, high precision
-    var date = {year: 1978, month: 10, day: 14, hour: 2};
-    // var responseString = "";
-    const planetaryFlags = {"sun": swisseph.SE_SUN, "moon": swisseph.SE_MOON, "mars": swisseph.SE_MARS, "mercury": swisseph.SE_MERCURY, "jupiter": swisseph.SE_JUPITER, "venus": swisseph.SE_VENUS, "saturn": swisseph.SE_SATURN, "uranus": swisseph.SE_URANUS, "rahu": swisseph.SE_TRUE_NODE, "ketu": swisseph.SE_TRUE_NODE}; 
-    // responseString += ('Test date:' + JSON.stringify(date));
+    // var date = {year: 1978, month: 10, day: 14, hour: 2};
+    var dateObject = new Date(Date.now());
+    var date = {year: 0, month: 0, day: 0, hour: 0};
+    date["year"] = dateObject.getFullYear();
+    date["month"] = (dateObject.getMonth() + 1); // add one because the object counts from zero and swisseph counts from one
+    date["day"] = dateObject.getDay();
+    date["hour"] = dateObject.getHours();
+    const planetaryFlags = {"sun": swisseph.SE_SUN, "moon": swisseph.SE_MOON, "mars": swisseph.SE_MARS, "mercury": swisseph.SE_MERCURY, "jupiter": swisseph.SE_JUPITER, "venus": swisseph.SE_VENUS, "saturn": swisseph.SE_SATURN, "uranus": swisseph.SE_URANUS, "rahu": swisseph.SE_TRUE_NODE, "ketu": swisseph.SE_TRUE_NODE};
     // Julian day
     swisseph.swe_julday (date.year, date.month, date.day, date.hour, swisseph.SE_GREG_CAL, function (julday_ut) {
         //nresponseString += ('Julian UT day for date:' + julday_ut);
@@ -79,14 +88,13 @@ router.get('/siderealPlanets', (req, res) => {
             // calculate planetary positions
             swisseph.swe_calc_ut (julday_ut, planetaryFlags[planet], flag, function (body) {
                 assert (!body.error, body.error);
-                // assuming parseInt returns only integer part without rounding
-                // responseString += ('Planet ' + planet + " longitude: " + JSON.stringify(parseInt((body.longitude / 30))));
                 if (planet === "ketu") { // place ketu 180 degrees apart from rahu
                     body.longitude += 180;
                     if (body.longitude > 360) { // wrap around circle if necessary
                         body.longitude -= 360;
                     }
                 }
+                // assuming parseInt returns only integer part without rounding
                 localPlanetaryPositions[planet] = parseInt((body.longitude / 30)); // should assign position to planet
             });
         }
