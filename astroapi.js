@@ -61,7 +61,7 @@ router.get('/date', (req, res) => {
     date["year"] = dateObject.getFullYear();
     date["month"] = (dateObject.getMonth() + 1); // add one because the object counts from zero and swisseph counts from one
     date["day"] = dateObject.getDay();
-    date["hour"] = dateObject.getHours();
+    date["hour"] = (dateObject.getHours() + (dateObject.getMinutes() / 60) + (dateObject.getSeconds() / 3600));
     var julday = swisseph.swe_julday(date.year, date.month, date.day, date.hour, swisseph.SE_GREG_CAL);
     // res.json(julday);
     res.send(("Year: " + date["year"] + " Month: " + date["month"] + " Day: " + date["day"] + " Hour: " + date["hour"] + " Value: " + julday));
@@ -79,7 +79,7 @@ router.get('/siderealPlanets', (req, res) => {
     date["year"] = dateObject.getFullYear();
     date["month"] = (dateObject.getMonth() + 1); // add one because the object counts from zero and swisseph counts from one
     date["day"] = dateObject.getDay();
-    date["hour"] = dateObject.getHours();
+    date["hour"] = (dateObject.getHours() + (dateObject.getMinutes() / 60) + (dateObject.getSeconds() / 3600));
     const planetaryFlags = {"sun": swisseph.SE_SUN, "moon": swisseph.SE_MOON, "mars": swisseph.SE_MARS, "mercury": swisseph.SE_MERCURY, "jupiter": swisseph.SE_JUPITER, "venus": swisseph.SE_VENUS, "saturn": swisseph.SE_SATURN, "uranus": swisseph.SE_URANUS, "rahu": swisseph.SE_TRUE_NODE, "ketu": swisseph.SE_TRUE_NODE};
     // Julian day
     swisseph.swe_julday (date.year, date.month, date.day, date.hour, swisseph.SE_GREG_CAL, function (julday_ut) {
