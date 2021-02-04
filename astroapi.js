@@ -64,7 +64,7 @@ router.get('/date', (req, res) => {
     date["hour"] = dateObject.getHours();
     var julday = swisseph.swe_julday(date.year, date.month, date.day, date.hour, swisseph.SE_GREG_CAL);
     // res.json(julday);
-    res.send((date + julday));
+    res.send((json.stringify(date) + julday));
 });
 
 router.get('/siderealPlanets', (req, res) => {
