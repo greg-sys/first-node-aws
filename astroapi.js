@@ -133,7 +133,7 @@ router.get('/siderealPlanets', (req, res) => {
             err.response = res
             throw err
         }
-        if(res.headers.get("content-type") !== "application/json") {
+        if(res.headers.get("content-type") !== "application/json; charset=utf-8") {
             throw new TypeError(`Expected JSON, got ${res.headers.get("content-type")} `);
         }
         return res.json();
