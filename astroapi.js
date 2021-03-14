@@ -185,7 +185,7 @@ router.get('/siderealPlanets', (req, res) => {
         res.header('Access-Control-Allow-Credentials', true)
         res.header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
         res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
-        res.send("API error: " + error.toString());
+        res.send("API error (please wait a while and try again): " + error.toString());
       });
 });
 
