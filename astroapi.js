@@ -127,7 +127,17 @@ router.get('/siderealPlanets', (req, res) => {
           'Content-Type': 'application/x-www-form-urlencoded', // this does not trigger a CORS preflight, works with AWS
         },
       })
-    .then(res => res.json())
+    .then(res => {
+        if(res.status !== 200) {
+            let err = new Error(res.statusText)
+            err.response = res
+            throw err
+        }
+        if(res.headers.get("content-type") !== "application/json") {
+            throw new TypeError(`Expected JSON, got ${res.headers.get("content-type")} `);
+        }
+        return res.json();
+    })
     .then(json => {
         dateTimeString = new String(json["datetime"]);
         console.log(dateTimeString);
