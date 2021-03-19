@@ -130,7 +130,7 @@ router.get('/dateFromApi', (req, res) => {
       });
 });
 
-router.get('siderealPlanets2', (req, res) =>{
+router.get('/siderealPlanets2', (req, res) =>{
     ntpClient.getNetworkTime("time.google.com", 123, function(err, date) { // or pool.ntp.org
         if(err) {
             console.error(err);
