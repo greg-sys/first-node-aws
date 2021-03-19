@@ -141,12 +141,13 @@ router.get('/siderealPlanets2', (req, res) =>{
             res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
             res.send("API error (please wait a while and try again): " + error.toString());
         } else {
-            var dateObject = new Date(date); // date should be a string like Fri Mar 19 2021 15:53:06 GMT+0000 (Coordinated Universal Time)
+            const dateItems=date.split(" "); // date should be a string like "Fri Mar 19 2021 15:53:06 GMT+0000 (Coordinated Universal Time)"
             var dateJson = {year: 0, month: 0, day: 0, hour: 0};
-            dateJson["year"] = dateObject.getFullYear();
-            dateJson["month"] = (dateObject.getMonth() + 1); // add one because the object counts from zero and swisseph counts from one
-            dateJson["day"] = dateObject.getDay();
-            dateJson["hour"] = (dateObject.getHours() + (dateObject.getMinutes() / 60) + (dateObject.getSeconds() / 3600));
+            dateJson["year"] = parseInt(dateItems[3]);
+            dateJson["month"] = monthToInt(dateItems[1]); 
+            dateJson["day"] = parseInt(dateItems[2]); 
+            var dateHourItems = dateItems[4].split(":"); // split into strings for hours, minutes, seconds
+            dateJson["hour"] = (parseInt(dateHourItems[0]) + (parseInt(dateHourItems[1]) / 60) + (parseInt(dateHourItems[2]) / 3600)); // prepare floating point value for Swiss Ephemeris
             res.json(dateJson);  
         }
     });
