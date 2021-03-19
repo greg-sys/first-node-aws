@@ -58,7 +58,7 @@ router.get('/planets', (req, res) => {
     res.json(planetaryPositions);
 });
 
-rounter.get('/ntpDate', (req, res) => {
+router.get('/ntpDate', (req, res) => {
     var date = new Date();
     ntpClient.getNetworkTime("pool.ntp.org", 123, function(err, date) {
         if(err) {
