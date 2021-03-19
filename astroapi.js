@@ -60,7 +60,7 @@ router.get('/planets', (req, res) => {
 
 router.get('/ntpDate', (req, res) => {
     var date = new Date();
-    ntpClient.getNetworkTime("pool.ntp.org", 123, function(err, date) {
+    ntpClient.getNetworkTime("time.google.com", 123, function(err, date) { // or pool.ntp.org
         if(err) {
             console.error(err);
             // four lines below from StackOverflow to allow CORS
