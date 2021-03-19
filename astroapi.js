@@ -130,6 +130,28 @@ router.get('/dateFromApi', (req, res) => {
       });
 });
 
+router.get('siderealPlanets2', (req, res) =>{
+    ntpClient.getNetworkTime("time.google.com", 123, function(err, date) { // or pool.ntp.org
+        if(err) {
+            console.error(err);
+            // four lines below from StackOverflow to allow CORS
+            res.header('Access-Control-Allow-Origin', '*')
+            res.header('Access-Control-Allow-Credentials', true)
+            res.header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
+            res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
+            res.send("API error (please wait a while and try again): " + error.toString());
+        } else {
+            var dateObject = new Date(date); // date should be a string like Fri Mar 19 2021 15:53:06 GMT+0000 (Coordinated Universal Time)
+            var dateJson = {year: 0, month: 0, day: 0, hour: 0};
+            dateJson["year"] = dateObject.getFullYear();
+            dateJson["month"] = (dateObject.getMonth() + 1); // add one because the object counts from zero and swisseph counts from one
+            dateJson["day"] = dateObject.getDay();
+            dateJson["hour"] = (dateObject.getHours() + (dateObject.getMinutes() / 60) + (dateObject.getSeconds() / 3600));
+            res.json(dateJson);  
+        }
+    });
+});
+
 router.get('/siderealPlanets', (req, res) => {
     // path to ephemeris data
     swisseph.swe_set_ephe_path (__dirname + '/../ephe');
