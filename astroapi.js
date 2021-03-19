@@ -7,7 +7,9 @@ const fetch = require("node-fetch");
 
 var swisseph = require('swisseph');
 var assert = require('assert');
+var ntpClient = require('ntp-client');
 const { response } = require('express');
+const { restart } = require('nodemon');
 
 app.use(express.json()); // enable parsing of JSON objects -- example of middleware
 app.use(cors()); // enable Cross-Origin Resource Sharing
@@ -54,6 +56,21 @@ router.get('/', (req, res) => {
 
 router.get('/planets', (req, res) => {
     res.json(planetaryPositions);
+});
+
+rounter.get('/ntpDate', (req, res) => {
+    var date = new Date();
+    ntpClient.getNetworkTime("pool.ntp.org", 123, function(err, date) {
+        if(err) {
+            console.error(err);
+            // four lines below from StackOverflow to allow CORS
+            res.header('Access-Control-Allow-Origin', '*')
+            res.header('Access-Control-Allow-Credentials', true)
+            res.header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
+            res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
+            res.send("API error (please wait a while and try again): " + error.toString());
+        } else res.send("Current time : " + date); // Mon Jul 08 2013 21:31:31 GMT+0200 (Paris, Madrid (heure d’été))    
+    });
 });
 
 router.get('/serverDate', (req, res) => {
