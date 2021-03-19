@@ -55,7 +55,7 @@ router.get('/serverDate', (req, res) => {
     var date = {year: 0, month: 0, day: 0, hour: 0};
     date["year"] = dateObject.getUTCFullYear();
     date["month"] = (dateObject.getUTCMonth() + 1); // add one because the object counts from zero and swisseph counts from one
-    date["day"] = dateObject.getUTCDay();
+    date["day"] = dateObject.getUTCDate(); // returns day of month, not day of week
     date["hour"] = (dateObject.getUTCHours() + (dateObject.getUTCMinutes() / 60) + (dateObject.getUTCSeconds() / 3600));
     var julday = swisseph.swe_julday(date.year, date.month, date.day, date.hour, swisseph.SE_GREG_CAL);
     // res.json(julday);
