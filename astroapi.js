@@ -14,28 +14,6 @@ const { restart } = require('nodemon');
 app.use(express.json()); // enable parsing of JSON objects -- example of middleware
 app.use(cors()); // enable Cross-Origin Resource Sharing
 
-const courses = [
-    { id: 1, name: 'course1'},
-    { id: 2, name: 'course2'},
-    { id: 3, name: 'course3'}
-];
-/*
-const planetaryPositions = [
-        {
-        sun: 5,
-        moon: 10,
-        mars: 6,
-        mercury: 6,
-        jupiter: 3,
-        venus: 6,
-        saturn: 4,
-        rahu: 5,
-        ketu: 4,
-        uranus: 6
-    }
-]; 
-*/
-
 var planetaryPositions = [
 {
     sun: 1,
@@ -59,8 +37,7 @@ router.get('/planets', (req, res) => {
 });
 
 router.get('/ntpDate', (req, res) => {
-    var date = new Date();
-    ntpClient.getNetworkTime("time.google.com", 123, function(err, date) { // or pool.ntp.org
+    ntpClient.getNetworkTime("time.google.com", 123, function(err, date) { // pool.ntp.org or time.google.com
         if(err) {
             console.error(err);
             // four lines below from StackOverflow to allow CORS
@@ -69,17 +46,17 @@ router.get('/ntpDate', (req, res) => {
             res.header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
             res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
             res.send("API error (please wait a while and try again): " + error.toString());
-        } else res.send("Current time : " + date); // Mon Jul 08 2013 21:31:31 GMT+0200 (Paris, Madrid (heure d’été))    
+        } else res.send("Current time : " + date.toUTCString()); // e.g. Current time : Fri, 19 Mar 2021 19:07:29 GMT    
     });
 });
 
 router.get('/serverDate', (req, res) => {
-    var dateObject = new Date(Date.now()); // server date and time, which is sometimes wrong on AWS
+    var dateObject = new Date(Date.now()); // server date and time
     var date = {year: 0, month: 0, day: 0, hour: 0};
-    date["year"] = dateObject.getFullYear();
-    date["month"] = (dateObject.getMonth() + 1); // add one because the object counts from zero and swisseph counts from one
-    date["day"] = dateObject.getDay();
-    date["hour"] = (dateObject.getHours() + (dateObject.getMinutes() / 60) + (dateObject.getSeconds() / 3600));
+    date["year"] = dateObject.getUTCFullYear();
+    date["month"] = (dateObject.getUTCMonth() + 1); // add one because the object counts from zero and swisseph counts from one
+    date["day"] = dateObject.getUTCDay();
+    date["hour"] = (dateObject.getUTCHours() + (dateObject.getUTCMinutes() / 60) + (dateObject.getUTCSeconds() / 3600));
     var julday = swisseph.swe_julday(date.year, date.month, date.day, date.hour, swisseph.SE_GREG_CAL);
     // res.json(julday);
     res.send(("Year: " + date["year"] + " Month: " + date["month"] + " Day: " + date["day"] + " Hour: " + date["hour"] + " Value: " + julday));
@@ -130,7 +107,7 @@ router.get('/dateFromApi', (req, res) => {
       });
 });
 
-router.get('/siderealPlanets2', (req, res) =>{
+router.get('/siderealPlanets', (req, res) =>{
     ntpClient.getNetworkTime("time.google.com", 123, function(err, date) { // or pool.ntp.org
         if(err) {
             console.error(err);
@@ -141,18 +118,46 @@ router.get('/siderealPlanets2', (req, res) =>{
             res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
             res.send("API error (please wait a while and try again): " + error.toString());
         } else {
-            const dateItems=date.split(" "); // date should be a string like "Fri Mar 19 2021 15:53:06 GMT+0000 (Coordinated Universal Time)"
             var dateJson = {year: 0, month: 0, day: 0, hour: 0};
-            dateJson["year"] = parseInt(dateItems[3]);
-            dateJson["month"] = monthToInt(dateItems[1]); 
-            dateJson["day"] = parseInt(dateItems[2]); 
-            var dateHourItems = dateItems[4].split(":"); // split into strings for hours, minutes, seconds
-            dateJson["hour"] = (parseInt(dateHourItems[0]) + (parseInt(dateHourItems[1]) / 60) + (parseInt(dateHourItems[2]) / 3600)); // prepare floating point value for Swiss Ephemeris
-            res.json(dateJson);  
+            dateJson["year"] = parseInt(date.getUTCFullYear());
+            dateJson["month"] = parseInt(date.getUTCMonth() + 1); // add one because JavaScript counts from zero, Swiss Ephemeris counts from one
+            dateJson["day"] = parseInt(date.getUTCDate()); // day of month, not day of week 
+            dateJson["hour"] = (parseInt(date.getUTCHours()) + parseInt((date.getUTCMinutes()) / 60) + (parseInt(date.getUTCSeconds()) / 3600)); // prepare floating point value for Swiss Ephemeris
+            // path to ephemeris data
+            swisseph.swe_set_ephe_path (__dirname + '/../ephe');
+            // set ayanamsa to standard Lahiri
+            swisseph.swe_set_sid_mode(swisseph.SE_SIDM_LAHIRI, 0, 0);
+            var flag = swisseph.SEFLG_SIDEREAL | swisseph.SEFLG_SPEED; // use sidereal position, high precision
+            const planetaryFlags = {"sun": swisseph.SE_SUN, "moon": swisseph.SE_MOON, "mars": swisseph.SE_MARS, "mercury": swisseph.SE_MERCURY, "jupiter": swisseph.SE_JUPITER, "venus": swisseph.SE_VENUS, "saturn": swisseph.SE_SATURN, "uranus": swisseph.SE_URANUS, "rahu": swisseph.SE_TRUE_NODE, "ketu": swisseph.SE_TRUE_NODE};
+            // Julian day
+            swisseph.swe_julday (dateJson.year, dateJson.month, dateJson.day, dateJson.hour, swisseph.SE_GREG_CAL, function (julday_ut) {
+                localPlanetaryPositions = planetaryPositions[0];
+                for (const planet in localPlanetaryPositions) {
+                    // calculate planetary positions
+                    swisseph.swe_calc_ut (julday_ut, planetaryFlags[planet], flag, function (body) {
+                        assert (!body.error, body.error);
+                        if (planet === "ketu") { // place ketu 180 degrees apart from rahu
+                            body.longitude += 180;
+                            if (body.longitude > 360) { // wrap around circle if necessary
+                                body.longitude -= 360;
+                            }
+                        }
+                        // assuming parseInt returns only integer part without rounding
+                        localPlanetaryPositions[planet] = parseInt((body.longitude / 30)); // should assign position to planet
+                    });
+                }
+            });
+            // four lines below from StackOverflow to allow CORS
+            res.header('Access-Control-Allow-Origin', '*')
+            res.header('Access-Control-Allow-Credentials', true)
+            res.header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
+            res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
+            res.json(localPlanetaryPositions);
         }
     });
 });
 
+/* Old version of this route
 router.get('/siderealPlanets', (req, res) => {
     // path to ephemeris data
     swisseph.swe_set_ephe_path (__dirname + '/../ephe');
@@ -228,6 +233,7 @@ router.get('/siderealPlanets', (req, res) => {
         res.send("API error (please wait a while and try again): " + error.toString());
       });
 });
+*/
 
 router.get('/test', (req, res) => {
     // Test date
